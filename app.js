@@ -8,6 +8,12 @@ const ctx = document.getElementById('myChart');
 let rectangle;
 let map;
 let infoWindow;
+let fiveStar = 0;
+let fourStar = 0;
+let threeStar = 0;
+let twoStar = 0;
+let oneStar = 0
+let noStar = 0;
 
 
 function findCebuBounds() {
@@ -41,7 +47,7 @@ function findNearbyRestos(category) {
       }
     });
   })
-
+  removeChart()
 }
 
 function filterByCategory(query) {
@@ -91,8 +97,9 @@ function renderDirections(origin, destination) {
 
 function addAllToMarkers(places) {
   window.markers = []
+  console.log(places)
   for (let place of places) {
-    let marker = new google.maps.Marker({ position: place.geometry.location, map: window.googleMap, title: place.name })
+    let marker = new google.maps.Marker({ position: place.geometry.location, map: window.googleMap, title: place.name, price: place.price_level, rating: place.rating })
 
     marker.addListener('click', () => {
       let infowindow = new google.maps.InfoWindow({
@@ -104,6 +111,12 @@ function addAllToMarkers(places) {
     })
     window.markers.push(marker)
   }
+  
+  chart()
+}
+function removeChart (){
+  const element = document.getElementById("myChart");
+element.remove();
 }
 
 function getCurrenLocation() {
@@ -163,7 +176,7 @@ function initMap() {
     let destination = new google.maps.LatLng(elem.data('lat'), elem.data('lng'))
     renderDirections(window.currentLoc, destination)
   })
-
+  
 }
 
 function addRectangle(){
@@ -218,22 +231,48 @@ function showNewRect() {
   infoWindow.setPosition(ne);
   infoWindow.open(window.googleMap);
 }
-
-
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-    datasets: [{
-      axis: 'y',
-      label: '# of Votes',
-      data: [12, 50, 3, 5, 2, 3],
-      borderWidth: 1
-    }]
-  },
-  options: {
-        indexAxis: 'y',
+function count(){
+  for (let marker of window.markers) {
+    if (marker.rating == 5)
+      fiveStar += 1
+    if (marker.rating > 4 && marker.rating <= 4.9)
+      fourStar += 1
+    if (marker.rating > 3 && marker.rating <= 3.9)
+      threeStar += 1
+    if (marker.rating > 2 && marker.rating <= 2.9)
+      twoStar += 1
+    if (marker.rating > 1 && marker.rating <= 1.9)
+      oneStar += 1
+    if (marker.rating > 0 && marker.rating <= 0.9)
+      noStar += 1
   }
-});
+  console.log(fourStar)
+}
+function chart(){
+  count()
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Stars' , 'No Stars'],
+      datasets: [{
+        axis: 'y',
+        label: '# of Stars',
+        data: [
+           fiveStar,
+           fourStar, 
+           threeStar, 
+           twoStar,
+           oneStar,
+           noStar
+          ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+          indexAxis: 'y',
+    }
+  });
+}
+
 
 window.initMap = initMap;
